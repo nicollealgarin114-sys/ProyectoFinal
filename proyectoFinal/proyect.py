@@ -260,12 +260,13 @@ elif menu == "Estudiantes":
                     baja_curso = st.text_input("Escribe ID de curso para dar de baja (o deja vacío)")
                     if st.button("Dar de baja"):
                         if baja_curso.strip():
-                            est_obj["cursos"] = [x for x in est_obj.get("cursos", []) if str(x) != baja_curso.strip()]
-                            save_json(ESTUDIANTES_FILE, estudiantes)
-                            st.success("Curso retirado del estudiante.")
-                        else:
-                            st.warning("Escribe el ID del curso para dar de baja.")
-                eliminar = st.checkbox("Confirmar eliminación")  
+                            # Retirar curso
+est_obj["cursos"] = [x for x in est_obj.get("cursos", []) if str(x) != baja_curso.strip()]
+save_json(ESTUDIANTES_FILE, estudiantes)
+st.success("Curso retirado del estudiante.")
+
+# Confirmación de eliminación
+eliminar = st.checkbox("Confirmar eliminación")  
 
 if st.button("Eliminar estudiante"):
     if eliminar:
@@ -278,6 +279,7 @@ if st.button("Eliminar estudiante"):
             st.error("No se pudo eliminar el estudiante.")
     else:
         st.warning("Debes marcar la casilla para confirmar.")
+
 
     else:
         st.info("No hay estudiantes para editar/eliminar.")
