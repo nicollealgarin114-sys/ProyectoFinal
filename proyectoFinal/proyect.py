@@ -265,14 +265,20 @@ elif menu == "Estudiantes":
                             st.success("Curso retirado del estudiante.")
                         else:
                             st.warning("Escribe el ID del curso para dar de baja.")
-                if st.button("Eliminar estudiante"):
-                    if st.confirm_button("Confirmar eliminación del estudiante"):
-                        removed = remove_by_id(estudiantes, "id", sel_id)
-                        if removed:
-                            save_json(ESTUDIANTES_FILE, estudiantes)
-                            st.success("Estudiante eliminado.")
-                        else:
-                            st.error("No se pudo eliminar el estudiante.")
+                eliminar = st.checkbox("Confirmar eliminación")  
+
+if st.button("Eliminar estudiante"):
+    if eliminar:
+        removed = remove_by_id(estudiantes, "id", sel_id)
+        if removed:
+            save_json(ESTUDIANTES_FILE, estudiantes)
+            st.success("Estudiante eliminado.")
+            st.experimental_rerun()
+        else:
+            st.error("No se pudo eliminar el estudiante.")
+    else:
+        st.warning("Debes marcar la casilla para confirmar.")
+
     else:
         st.info("No hay estudiantes para editar/eliminar.")
 
