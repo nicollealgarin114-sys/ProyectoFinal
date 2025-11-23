@@ -22,9 +22,6 @@ def save_json(filename, data):
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
-# ---------- Modelos simples (dict-based) ----------
-# Usamos estructuras dict para facilitar guardado/recuperado en JSON.
-
 # ---------- Helpers ----------
 def find_by_id(lista: List[dict], id_key: str, id_value) -> Optional[dict]:
     for item in lista:
@@ -89,7 +86,6 @@ elif menu == "Cursos":
 
     st.subheader("Lista de cursos")
     if cursos:
-        # Mostrar tabla simple
         tabla = [{"ID": c["id"], "Nombre": c["nombre"], "Créditos": c.get("creditos", 0), "Instructores": ", ".join([str(i) for i in c.get("instructores", [])])} for c in cursos]
         st.table(tabla)
     else:
@@ -106,7 +102,6 @@ elif menu == "Cursos":
                 with st.form("editar_curso"):
                     nuevo_nombre = st.text_input("Nombre", value=curso_obj["nombre"])
                     nuevos_creditos = st.number_input("Créditos", min_value=0.0, step=0.5, value=float(curso_obj.get("creditos", 0)))
-                    # asignar instructores por IDs
                     st.write("Instructores actuales:", curso_obj.get("instructores", []))
                     assign_ids = st.text_input("Asignar instructores (IDs separados por coma) - deja vacío para no cambiar")
                     btn_edit = st.form_submit_button("Guardar cambios")
@@ -116,7 +111,6 @@ elif menu == "Cursos":
                         curso_obj["creditos"] = float(nuevos_creditos)
                         if assign_ids.strip():
                             ids_lista = [x.strip() for x in assign_ids.split(",") if x.strip()]
-                            # validar que existan
                             valid_ids = []
                             for iid in ids_lista:
                                 if find_by_id(instructores, "id", iid) or find_by_id(instructores, "id", int(iid)):
@@ -126,10 +120,7 @@ elif menu == "Cursos":
                         st.success("Curso actualizado.")
 
                 if st.button("Eliminar curso"):
-                    # al eliminar curso, quitar curso de estudiantes inscritos si aplica
-                    # primero confirmar
                     if st.confirm_button("Confirmar eliminación del curso"):
-                        # quitar referencias en estudiantes
                         for est in estudiantes:
                             if "cursos" in est and str(sel_id) in [str(x) for x in est.get("cursos", [])]:
                                 est["cursos"] = [x for x in est.get("cursos", []) if str(x) != str(sel_id)]
@@ -189,7 +180,6 @@ elif menu == "Instructores":
                         st.success("Instructor actualizado.")
                 if st.button("Eliminar instructor"):
                     if st.confirm_button("Confirmar eliminación del instructor"):
-                        # quitar referencia en cursos
                         for c in cursos:
                             if "instructores" in c and str(sel_id) in [str(x) for x in c.get("instructores", [])]:
                                 c["instructores"] = [x for x in c.get("instructores", []) if str(x) != str(sel_id)]
@@ -237,7 +227,6 @@ elif menu == "Estudiantes":
             if est_obj:
                 with st.form("editar_estudiante"):
                     nuevo_nombre = st.text_input("Nombre", value=est_obj["nombre"])
-                    # Mostrar cursos disponibles
                     curso_ids_display = [str(c["id"]) + " - " + c["nombre"] for c in cursos] if cursos else []
                     curso_para_inscribir = st.selectbox("Inscribir en curso (selecciona)", options=[""] + curso_ids_display)
                     btn_save = st.form_submit_button("Guardar cambios")
@@ -254,34 +243,29 @@ elif menu == "Estudiantes":
                             est_obj["cursos"].append(curso_sel_id)
                             save_json(ESTUDIANTES_FILE, estudiantes)
                             st.success("Estudiante inscrito en curso.")
-                # Dar de baja por ID de curso
+
                 if est_obj.get("cursos"):
                     st.write("Cursos inscritos:", ", ".join([str(x) for x in est_obj.get("cursos", [])]))
                     baja_curso = st.text_input("Escribe ID de curso para dar de baja (o deja vacío)")
                     if st.button("Dar de baja"):
                         if baja_curso.strip():
-                            # Retirar curso
-est_obj["cursos"] = [x for x in est_obj.get("cursos", []) if str(x) != baja_curso.strip()]
-save_json(ESTUDIANTES_FILE, estudiantes)
-st.success("Curso retirado del estudiante.")
+                            est_obj["cursos"] = [x for x in est_obj.get("cursos", []) if str(x) != baja_curso.strip()]
+                            save_json(ESTUDIANTES_FILE, estudiantes)
+                            st.success("Curso retirado del estudiante.")
+                        else:
+                            st.warning("Escribe el ID del curso para dar de baja.")
 
-# Confirmación de eliminación
-eliminar = st.checkbox("Confirmar eliminación")  
-
-if st.button("Eliminar estudiante"):
-    if eliminar:
-        removed = remove_by_id(estudiantes, "id", sel_id)
-        if removed:
-            save_json(ESTUDIANTES_FILE, estudiantes)
-            st.success("Estudiante eliminado.")
-            st.experimental_rerun()
-        else:
-            st.error("No se pudo eliminar el estudiante.")
-    else:
-        st.warning("Debes marcar la casilla para confirmar.")
-
-
+                eliminar = st.checkbox("Confirmar eliminación")
+                if st.button("Eliminar estudiante"):
+                    if eliminar:
+                        removed = remove_by_id(estudiantes, "id", sel_id)
+                        if removed:
+                            save_json(ESTUDIANTES_FILE, estudiantes)
+                            st.success("Estudiante eliminado.")
+                            st.experimental_rerun()
+                        else:
+                            st.error("No se pudo eliminar el estudiante.")
+                    else:
+                        st.warning("Debes marcar la casilla para confirmar.")
     else:
         st.info("No hay estudiantes para editar/eliminar.")
-
-
