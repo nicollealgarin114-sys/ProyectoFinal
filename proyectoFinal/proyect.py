@@ -257,15 +257,16 @@ elif menu == "Estudiantes":
 
                 eliminar = st.checkbox("Confirmar eliminación")
                 if st.button("Eliminar estudiante"):
-                    if eliminar:
-                        removed = remove_by_id(estudiantes, "id", sel_id)
-                        if removed:
-                            save_json(ESTUDIANTES_FILE, estudiantes)
-                            st.success("Estudiante eliminado.")
-                            st.experimental_rerun()
-                        else:
-                            st.error("No se pudo eliminar el estudiante.")
-                    else:
-                        st.warning("Debes marcar la casilla para confirmar.")
+    if eliminar:
+        removed = remove_by_id(estudiantes, "id", sel_id)
+        if removed:
+            save_json(ESTUDIANTES_FILE, estudiantes)
+            st.success("Estudiante eliminado.")
+            st.experimental_rerun()  # <-- Esto a veces falla en Streamlit Cloud
+        else:
+            st.error("No se pudo eliminar el estudiante.")
+    else:
+        st.warning("Debes marcar la casilla para confirmar.")
+
     else:
         st.info("No hay estudiantes para editar/eliminar.")
